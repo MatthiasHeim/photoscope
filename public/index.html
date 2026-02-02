@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photoscope — Interactive Photo Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Anybody:wght@100;400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --bg-deep: #0a0a0b;
+      --bg-surface: #111113;
+      --bg-elevated: #1a1a1e;
+      --accent-warm: #e8553d;
+      --accent-gold: #d4a853;
+      --accent-cool: #4a9ead;
+      --text-primary: #f0ece4;
+      --text-muted: #787068;
+      --text-dim: #454038;
+      --border-subtle: rgba(240, 236, 228, 0.06);
+      --border-hover: rgba(240, 236, 228, 0.12);
+      --grain-opacity: 0.035;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Film grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: var(--grain-opacity);
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Ambient light bleed */
+    .ambient-light {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(150px);
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-light--warm {
+      background: var(--accent-warm);
+      top: -200px;
+      right: -100px;
+      animation: drift-warm 20s ease-in-out infinite;
+    }
+    .ambient-light--cool {
+      background: var(--accent-cool);
+      bottom: -200px;
+      left: -150px;
+      animation: drift-cool 25s ease-in-out infinite;
+    }
+
+    @keyframes drift-warm {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-80px, 60px); }
+    }
+    @keyframes drift-cool {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(60px, -80px); }
+    }
+
+    /* Layout */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      animation: fade-down 0.8s ease-out;
+    }
+
+    .topbar__brand {
+      font-family: 'Anybody', sans-serif;
+      font-weight: 900;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .topbar__tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.75rem;
+      border-radius: 2px;
+    }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 3rem;
+      padding: 4rem 0;
+    }
+
+    .hero__title-group {
+      animation: fade-up 1s ease-out 0.2s both;
+    }
+
+    .hero__supertitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .hero__supertitle::before,
+    .hero__supertitle::after {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: var(--accent-warm);
+      opacity: 0.4;
+    }
+
+    .hero__title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .hero__title em {
+      font-style: italic;
+      color: var(--accent-gold);
+    }
+
+    .hero__subtitle {
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      letter-spacing: 0.05em;
+      line-height: 1.6;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      animation: fade-up 1s ease-out 0.5s both;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .upload-dropzone {
+      position: relative;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 4rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--bg-surface);
+      overflow: hidden;
+    }
+
+    .upload-dropzone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(232, 85, 61, 0.03) 100%);
+      transition: opacity 0.4s;
+    }
+
+    .upload-dropzone:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-elevated);
+      transform: translateY(-2px);
+    }
+
+    .upload-dropzone:hover .upload-dropzone__icon {
+      transform: translateY(-4px);
+      color: var(--accent-warm);
+    }
+
+    .upload-dropzone--active {
+      border-color: var(--accent-warm) !important;
+      background: rgba(232, 85, 61, 0.04) !important;
+      box-shadow: 0 0 60px rgba(232, 85, 61, 0.08);
+    }
+
+    .upload-dropzone__icon {
+      position: relative;
+      z-index: 1;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-dim);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: block;
+    }
+
+    .upload-dropzone__text {
+      position: relative;
+      z-index: 1;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .upload-dropzone__hint {
+      position: relative;
+      z-index: 1;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .upload-dropzone__input {
+      display: none;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      padding: 0.7rem 1.8rem;
+      background: transparent;
+      border: 1px solid var(--border-hover);
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .upload-btn:hover {
+      border-color: var(--accent-warm);
+      color: var(--accent-warm);
+    }
+
+    /* Processing state */
+    .upload-processing {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      padding: 3rem 0;
+      animation: fade-up 0.5s ease-out;
+    }
+
+    .upload-processing.is-visible {
+      display: flex;
+    }
+
+    .processing-spinner {
+      width: 48px;
+      height: 48px;
+      position: relative;
+    }
+
+    .processing-spinner__ring {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--border-subtle);
+      border-top-color: var(--accent-warm);
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+    }
+
+    .processing-spinner__ring:nth-child(2) {
+      inset: 6px;
+      border-top-color: var(--accent-gold);
+      animation-duration: 1.8s;
+      animation-direction: reverse;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .processing-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .processing-sublabel {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    /* Error */
+    .upload-error {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(232, 85, 61, 0.08);
+      border: 1px solid rgba(232, 85, 61, 0.2);
+      border-radius: 3px;
+      font-size: 0.75rem;
+      color: var(--accent-warm);
+      text-align: center;
+      animation: shake 0.4s ease-out;
+    }
+
+    .upload-error.is-visible {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      animation: fade-up 1s ease-out 0.8s both;
+    }
+
+    /* Animations */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .page { padding: 1.5rem; }
+      .hero { padding: 2rem 0; gap: 2rem; }
+      .upload-dropzone { padding: 3rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-light ambient-light--warm"></div>
+  <div class="ambient-light ambient-light--cool"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar__brand">Photoscope</div>
+      <div class="topbar__tag">AI Walkthrough</div>
+    </header>
+
+    <main class="hero">
+      <div class="hero__title-group">
+        <div class="hero__supertitle">Interactive Photo Experience</div>
+        <h1 class="hero__title">Upload an image.<br>Get an <em>interactive</em><br>AI walkthrough.</h1>
+        <p class="hero__subtitle">Drop any photo — homework, diagrams, documents — and receive<br>a shareable, narrated visual analysis with highlights and celebrations.</p>
+      </div>
+
+      <div class="upload-zone">
+        <div class="upload-dropzone" id="dropzone">
+          <span class="upload-dropzone__icon">◈</span>
+          <div class="upload-dropzone__text">Drop your image here</div>
+          <div class="upload-dropzone__hint">JPEG · PNG · GIF · WebP — up to 20 MB</div>
+          <button class="upload-btn" id="browseBtn">Browse files</button>
+          <input type="file" class="upload-dropzone__input" id="fileInput" accept="image/jpeg,image/png,image/gif,image/webp">
+        </div>
+
+        <div class="upload-processing" id="processing">
+          <div class="processing-spinner">
+            <div class="processing-spinner__ring"></div>
+            <div class="processing-spinner__ring"></div>
+          </div>
+          <div class="processing-label">Analyzing your image</div>
+          <div class="processing-sublabel">AI is identifying regions, annotations, and building your walkthrough…</div>
+        </div>
+
+        <div class="upload-error" id="errorMsg"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      Powered by Gemini AI · Built with care
+    </footer>
+  </div>
+
+  <script src="upload.js"></script>
+</body>
+</html>

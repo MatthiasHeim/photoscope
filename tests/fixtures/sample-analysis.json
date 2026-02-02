@@ -1,0 +1,47 @@
+{
+  "title": "Math Homework Review",
+  "summary": "3 out of 4 correct! Great work.",
+  "steps": [
+    {
+      "id": 1,
+      "label": "Problem A - Strawberry Baskets",
+      "type": "calculation",
+      "region": { "x": 5, "y": 10, "w": 90, "h": 18 },
+      "status": "correct",
+      "narration": "Problem A is perfectly solved! 42 times 500 grams equals 21,000 grams.",
+      "overlayText": "✓ Correct!",
+      "celebrate": true
+    },
+    {
+      "id": 2,
+      "label": "Problem B - Apple Crates",
+      "type": "calculation",
+      "region": { "x": 5, "y": 30, "w": 90, "h": 18 },
+      "status": "correct",
+      "narration": "Problem B is also correct! 15 times 2 kilograms equals 30 kilograms.",
+      "overlayText": "✓ Correct!",
+      "celebrate": true
+    },
+    {
+      "id": 3,
+      "label": "Problem C - Carrot Bags",
+      "type": "calculation",
+      "region": { "x": 5, "y": 50, "w": 90, "h": 20 },
+      "status": "incorrect",
+      "narration": "Problem C has a multiplication error. 38 times 1.5 should be 57, not 75.",
+      "overlayText": "38 × 1.5 = 57 kg → 57000g ÷ 600g = 95 bags",
+      "celebrate": false,
+      "errorHighlight": { "x": 10, "y": 55, "w": 30, "h": 5 }
+    },
+    {
+      "id": 4,
+      "label": "Problem D - Orange Boxes",
+      "type": "calculation",
+      "region": { "x": 5, "y": 72, "w": 90, "h": 18 },
+      "status": "correct",
+      "narration": "Problem D is correct. 24 times 750 grams equals 18,000 grams or 18 kilograms.",
+      "overlayText": "✓ Correct!",
+      "celebrate": true
+    }
+  ]
+}

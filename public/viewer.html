@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photoscope — Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Anybody:wght@100;400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="viewer-body">
+  <div class="viewer-loading" id="loadingScreen">
+    <div class="viewer-loading__spinner">
+      <div class="processing-spinner__ring"></div>
+      <div class="processing-spinner__ring"></div>
+    </div>
+    <div class="viewer-loading__text">Loading walkthrough…</div>
+  </div>
+
+  <div class="viewer-app" id="viewerApp" style="display:none;">
+    <header class="viewer-header">
+      <a href="/" class="viewer-header__brand">Photoscope</a>
+      <div class="viewer-header__title" id="analysisTitle"></div>
+      <div class="viewer-header__controls">
+        <button class="viewer-ctrl-btn" id="voiceToggle" title="Toggle narration">
+          <span class="icon-voice-on">🔊</span>
+          <span class="icon-voice-off" style="display:none;">🔇</span>
+        </button>
+        <button class="viewer-ctrl-btn" id="autoplayToggle" title="Toggle auto-play">▶</button>
+        <button class="viewer-ctrl-btn" id="shareBtn" title="Copy share link">🔗</button>
+      </div>
+    </header>
+
+    <div class="viewer-summary" id="analysisSummary"></div>
+
+    <div class="viewer-stage">
+      <div class="viewer-image-container" id="imageContainer">
+        <img id="mainImage" class="viewer-image" alt="Analyzed image">
+        <div class="overlay-layer" id="overlayLayer"></div>
+        <canvas class="celebration-canvas" id="celebrationCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="viewer-step-info" id="stepInfo">
+      <div class="step-info__label" id="stepLabel"></div>
+      <div class="step-info__narration" id="stepNarration"></div>
+    </div>
+
+    <div class="viewer-timeline" id="timeline"></div>
+  </div>
+
+  <div class="viewer-error" id="errorScreen" style="display:none;">
+    <div class="viewer-error__icon">✕</div>
+    <div class="viewer-error__title">Not Found</div>
+    <div class="viewer-error__text">This walkthrough doesn't exist or has been removed.</div>
+    <a href="/" class="viewer-error__link">Upload a new image</a>
+  </div>
+
+  <script src="/celebrations.js"></script>
+  <script src="/overlay.js"></script>
+  <script src="/timeline.js"></script>
+  <script src="/voice.js"></script>
+  <script src="/viewer.js"></script>
+</body>
+</html>
