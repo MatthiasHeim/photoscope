@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photoscope — Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Anybody:wght@100;400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0a0a0b;
+      --bg-surface: #111113;
+      --bg-elevated: #1a1a1e;
+      --accent-warm: #e8553d;
+      --accent-gold: #d4a853;
+      --accent-cool: #4a9ead;
+      --text-primary: #f0ece4;
+      --text-muted: #787068;
+      --text-dim: #454038;
+      --border-subtle: rgba(240, 236, 228, 0.06);
+      --border-hover: rgba(240, 236, 228, 0.12);
+      --grain-opacity: 0.035;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: var(--grain-opacity);
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .ambient-light {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(150px);
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-light--warm {
+      background: var(--accent-warm);
+      top: -200px;
+      right: -100px;
+      animation: drift-warm 20s ease-in-out infinite;
+    }
+    .ambient-light--cool {
+      background: var(--accent-cool);
+      bottom: -200px;
+      left: -150px;
+      animation: drift-cool 25s ease-in-out infinite;
+    }
+
+    @keyframes drift-warm {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-80px, 60px); }
+    }
+    @keyframes drift-cool {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(60px, -80px); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      animation: fade-down 0.8s ease-out;
+    }
+
+    .topbar__brand {
+      font-family: 'Anybody', sans-serif;
+      font-weight: 900;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .topbar__nav {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .topbar__link {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.75rem;
+      border-radius: 2px;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .topbar__link:hover {
+      color: var(--accent-warm);
+      border-color: var(--accent-warm);
+    }
+
+    .topbar__link--active {
+      color: var(--text-muted);
+      border-color: var(--border-hover);
+    }
+
+    .library-header {
+      padding: 3rem 0 2rem;
+      animation: fade-up 0.8s ease-out 0.2s both;
+    }
+
+    .library-header h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+    }
+
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+      padding-bottom: 3rem;
+      animation: fade-up 0.8s ease-out 0.4s both;
+    }
+
+    .library-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .library-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .library-card__thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      background: var(--bg-elevated);
+    }
+
+    .library-card__body {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .library-card__title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .library-card__copy {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      width: 32px;
+      height: 32px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .library-card__copy:hover {
+      border-color: var(--accent-warm);
+      color: var(--accent-warm);
+    }
+
+    .library-empty {
+      text-align: center;
+      padding: 6rem 2rem;
+      animation: fade-up 0.8s ease-out 0.4s both;
+    }
+
+    .library-empty__text {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .library-empty__link {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      text-decoration: none;
+      border: 1px solid var(--accent-warm);
+      padding: 0.5rem 1.2rem;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+
+    .library-empty__link:hover {
+      background: rgba(232, 85, 61, 0.1);
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 1.5rem; }
+      .library-header { padding: 2rem 0 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-light ambient-light--warm"></div>
+  <div class="ambient-light ambient-light--cool"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <a href="/" class="topbar__brand">Photoscope</a>
+      <nav class="topbar__nav">
+        <a href="/" class="topbar__link">Upload</a>
+        <a href="/library" class="topbar__link topbar__link--active">Library</a>
+      </nav>
+    </header>
+
+    <div class="library-header">
+      <h1>Library</h1>
+    </div>
+
+    <div class="library-grid" id="libraryGrid"></div>
+    <div class="library-empty" id="libraryEmpty" style="display:none;">
+      <div class="library-empty__text">No analyses yet</div>
+      <a href="/" class="library-empty__link">Upload an image</a>
+    </div>
+  </div>
+
+  <script src="library.js"></script>
+</body>
+</html>

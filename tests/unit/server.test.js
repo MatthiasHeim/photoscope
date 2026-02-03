@@ -108,6 +108,57 @@ describe('GET /api/analysis/:id', () => {
   });
 });
 
+describe('POST /api/tts', () => {
+  it('returns 400 when text is missing', async () => {
+    const res = await fetch(`${BASE()}/api/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toMatch(/missing text/i);
+  });
+
+  it('returns 503 when no API key is configured', async () => {
+    const res = await fetch(`${BASE()}/api/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'Hello' }),
+    });
+    // API key is empty in test env, so should get 503
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.error).toBeTruthy();
+  });
+});
+
+describe('GET /api/library', () => {
+  it('returns items array', async () => {
+    const res = await fetch(`${BASE()}/api/library`);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toHaveProperty('items');
+    expect(Array.isArray(json.items)).toBe(true);
+  });
+
+  it('items have id, title, and imageUrl fields', async () => {
+    // Upload an image first to ensure at least one item exists
+    const formData = new FormData();
+    const blob = new Blob([tinyJpeg()], { type: 'image/jpeg' });
+    formData.append('image', blob, 'lib-test.jpg');
+    await fetch(`${BASE()}/api/upload`, { method: 'POST', body: formData });
+
+    const res = await fetch(`${BASE()}/api/library`);
+    const json = await res.json();
+    expect(json.items.length).toBeGreaterThan(0);
+    const item = json.items[0];
+    expect(item).toHaveProperty('id');
+    expect(item).toHaveProperty('title');
+    expect(item).toHaveProperty('imageUrl');
+  });
+});
+
 describe('GET /view/:id', () => {
   it('serves HTML', async () => {
     const res = await fetch(`${BASE()}/view/some-id`);

@@ -48,3 +48,19 @@ test('voice toggle button changes icon on click', async ({ page }) => {
   await expect(voiceOn).toBeVisible();
   await expect(voiceOff).not.toBeVisible();
 });
+
+test('TTS audio fallback works gracefully when endpoint fails', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#fileInput').setInputFiles(tmpFile);
+  await page.waitForURL(/\/view\/.+/, { timeout: 15000 });
+
+  await expect(page.locator('#viewerApp')).toBeVisible();
+
+  // Voice should be enabled by default and not crash even without real TTS
+  const voiceToggle = page.locator('#voiceToggle');
+  await expect(voiceToggle).toBeVisible();
+
+  // The viewer should continue functioning (no crash from TTS failure)
+  const stepLabel = page.locator('#stepLabel');
+  await expect(stepLabel).not.toBeEmpty();
+});

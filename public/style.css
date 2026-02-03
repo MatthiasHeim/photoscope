@@ -226,6 +226,10 @@
   pointer-events: none;
 }
 
+.overlay-layer > * {
+  pointer-events: auto;
+}
+
 .celebration-canvas {
   position: absolute;
   inset: 0;
@@ -241,6 +245,24 @@
   border: 2px solid;
   border-radius: 4px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.overlay-box--clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.overlay-box--dimmed {
+  opacity: 0.25;
+}
+
+.overlay-box--dimmed:hover {
+  opacity: 0.5;
+}
+
+.overlay-box--active {
+  opacity: 1;
+  z-index: 1;
 }
 
 .overlay-box--animate {

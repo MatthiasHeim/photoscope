@@ -54,3 +54,22 @@ test('clicking timeline steps updates step info', async ({ page }) => {
     expect(label).toBeTruthy();
   }
 });
+
+test('clicking overlay region activates corresponding step', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#fileInput').setInputFiles(tmpFile);
+  await page.waitForURL(/\/view\/.+/, { timeout: 15000 });
+
+  await expect(page.locator('#viewerApp')).toBeVisible();
+
+  // Check overlay boxes are rendered and clickable
+  const overlayBoxes = page.locator('.overlay-box--clickable');
+  const count = await overlayBoxes.count();
+
+  if (count > 0) {
+    // Click the first overlay box
+    await overlayBoxes.first().click();
+    const stepLabel = page.locator('#stepLabel');
+    await expect(stepLabel).not.toBeEmpty();
+  }
+});

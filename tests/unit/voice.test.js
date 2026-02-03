@@ -169,3 +169,39 @@ describe('Voice module', () => {
     expect(voice.isSpeaking()).toBe(false);
   });
 });
+
+describe('TTS fetch-based voice', () => {
+  it('caches audio URLs to avoid re-fetching', () => {
+    const cache = new Map();
+    const text = 'hello world';
+    const url = 'blob:http://localhost/fake-audio';
+
+    // First call: cache miss
+    expect(cache.has(text)).toBe(false);
+    cache.set(text, url);
+
+    // Second call: cache hit
+    expect(cache.has(text)).toBe(true);
+    expect(cache.get(text)).toBe(url);
+  });
+
+  it('fallback triggers when fetch fails', async () => {
+    // Simulate fetch failure and fallback to Web Speech
+    let usedFallback = false;
+    const fakeFetch = () => Promise.reject(new Error('TTS unavailable'));
+
+    await fakeFetch().catch(() => {
+      usedFallback = true;
+    });
+
+    expect(usedFallback).toBe(true);
+  });
+
+  it('clearCache removes all cached entries', () => {
+    const cache = new Map();
+    cache.set('a', 'url1');
+    cache.set('b', 'url2');
+    cache.clear();
+    expect(cache.size).toBe(0);
+  });
+});

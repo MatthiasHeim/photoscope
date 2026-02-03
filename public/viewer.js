@@ -44,6 +44,10 @@ const Viewer = (() => {
     img.src = imageUrl;
 
     Overlay.init(document.getElementById('overlayLayer'));
+    Overlay.setOnClick((i) => {
+      stopAutoPlay();
+      goToStep(i);
+    });
     Celebrations.init(document.getElementById('celebrationCanvas'));
     Timeline.init(document.getElementById('timeline'), steps, (i) => {
       stopAutoPlay();
@@ -102,8 +106,8 @@ const Viewer = (() => {
     currentStep = index;
     const step = steps[currentStep];
 
-    // Update overlay
-    Overlay.renderStep(step);
+    // Update overlay — show all steps, highlight active
+    Overlay.renderAllSteps(steps, currentStep);
 
     // Update timeline
     Timeline.setActive(currentStep);
@@ -125,6 +129,10 @@ const Viewer = (() => {
         if (autoPlaying) advanceAutoPlay();
       });
     }
+
+    // Prefetch TTS for next few steps
+    const upcoming = steps.slice(currentStep + 1, currentStep + 4).map(s => s.narration);
+    if (upcoming.length > 0) Voice.prefetch(upcoming);
   }
 
   function nextStep() {

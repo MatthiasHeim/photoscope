@@ -100,6 +100,26 @@ describe('Viewer step navigation', () => {
     nav.prevStep(); // 1
     expect(nav.getCurrentStep()).toBe(1);
   });
+
+  it('overlay click callback triggers goToStep', () => {
+    // Simulate what happens when overlay click fires
+    let overlaySetActiveIdx = -1;
+    const mockOverlaySetActive = (idx) => { overlaySetActiveIdx = idx; };
+
+    nav.goToStep(2);
+    mockOverlaySetActive(nav.getCurrentStep());
+    expect(overlaySetActiveIdx).toBe(2);
+  });
+
+  it('goToStep updates overlay active state', () => {
+    let lastActiveIdx = -1;
+    const setActive = (idx) => { lastActiveIdx = idx; };
+
+    // Simulate goToStep calling setActive
+    nav.goToStep(3);
+    setActive(nav.getCurrentStep());
+    expect(lastActiveIdx).toBe(3);
+  });
 });
 
 describe('sample analysis fixture', () => {

@@ -41,4 +41,12 @@ test('viewer is usable on mobile viewport', async ({ page }) => {
   await expect(page.locator('#timeline')).toBeAttached();
   await expect(page.locator('#overlayLayer')).toBeAttached();
   await expect(page.locator('#mainImage')).toBeAttached();
+
+  // Verify overlay regions are present and clickable on mobile
+  const overlayBoxes = page.locator('.overlay-box--clickable');
+  const count = await overlayBoxes.count();
+  if (count > 0) {
+    await overlayBoxes.first().click();
+    await expect(page.locator('#stepLabel')).not.toBeEmpty();
+  }
 });

@@ -32,3 +32,15 @@ test('uploading a non-image file shows error message', async ({ page }) => {
     if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
   }
 });
+
+test('TTS endpoint failure does not crash the viewer', async ({ page }) => {
+  // Intercept TTS requests to simulate failure
+  await page.route('**/api/tts', (route) => {
+    route.fulfill({ status: 500, body: JSON.stringify({ error: 'TTS failed' }) });
+  });
+
+  await page.goto('/view/nonexistent-id-12345');
+
+  // Even with TTS failing, error screen should show (not a crash)
+  await expect(page.locator('#errorScreen')).toBeVisible({ timeout: 10000 });
+});

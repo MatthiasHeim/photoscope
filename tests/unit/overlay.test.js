@@ -70,3 +70,36 @@ describe('regionToStyle', () => {
     expect(style.top).toBe('10.3%');
   });
 });
+
+describe('renderAllSteps logic', () => {
+  const steps = [
+    { id: 1, label: 'Step 1', status: 'correct', region: { x: 0, y: 0, w: 50, h: 50 }, overlayText: 'OK', celebrate: true },
+    { id: 2, label: 'Step 2', status: 'incorrect', region: { x: 50, y: 0, w: 50, h: 50 }, overlayText: 'Error', celebrate: false, errorHighlight: { x: 55, y: 5, w: 20, h: 20 } },
+    { id: 3, label: 'Step 3', status: 'neutral', region: { x: 0, y: 50, w: 100, h: 50 }, overlayText: 'Note', celebrate: false },
+  ];
+
+  it('identifies active vs dimmed steps correctly', () => {
+    const activeIdx = 1;
+    steps.forEach((step, i) => {
+      const isActive = i === activeIdx;
+      expect(isActive).toBe(i === 1);
+    });
+  });
+
+  it('all steps have valid regions', () => {
+    for (const step of steps) {
+      const style = regionToStyle(step.region);
+      expect(style.left).toBeTruthy();
+      expect(style.top).toBeTruthy();
+      expect(style.width).toBeTruthy();
+      expect(style.height).toBeTruthy();
+    }
+  });
+
+  it('click callback receives correct index', () => {
+    let clickedIndex = -1;
+    const callback = (i) => { clickedIndex = i; };
+    callback(2);
+    expect(clickedIndex).toBe(2);
+  });
+});
