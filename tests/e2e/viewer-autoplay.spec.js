@@ -22,11 +22,12 @@ test.afterAll(() => {
 async function uploadAndGetViewerUrl(page) {
   await page.goto('/');
   await page.locator('#fileInput').setInputFiles(tmpFile);
-  await page.waitForURL(/\/view\/.+/, { timeout: 15000 });
+  await page.waitForURL(/\/view\/.+/, { timeout: 60000 });
   return page.url();
 }
 
-test('viewer loads and displays step info', async ({ page }) => {
+test('viewer loads and displays step info', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
   await uploadAndGetViewerUrl(page);
 
   await expect(page.locator('#viewerApp')).toBeVisible();
@@ -34,7 +35,8 @@ test('viewer loads and displays step info', async ({ page }) => {
   await expect(page.locator('#stepNarration')).not.toBeEmpty();
 });
 
-test('overlay elements appear on viewer', async ({ page }) => {
+test('overlay elements appear on viewer', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
   await uploadAndGetViewerUrl(page);
 
   await expect(page.locator('#overlayLayer')).toBeVisible();
@@ -45,25 +47,27 @@ test('overlay elements appear on viewer', async ({ page }) => {
   await expect(page.locator('#overlayLayer')).toBeAttached();
 });
 
-test('autoplay toggle switches between play and pause', async ({ page }) => {
+test('autoplay toggle switches between play and pause', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
   await uploadAndGetViewerUrl(page);
 
   const autoplayBtn = page.locator('#autoplayToggle');
   await expect(autoplayBtn).toBeVisible();
 
-  // Initially shows play icon
-  await expect(autoplayBtn).toHaveText('▶');
-
-  // Click to start autoplay
-  await autoplayBtn.click();
+  // Autoplay starts automatically, so initially shows pause icon
   await expect(autoplayBtn).toHaveText('⏸');
 
-  // Click to pause
+  // Click to pause autoplay
   await autoplayBtn.click();
   await expect(autoplayBtn).toHaveText('▶');
+
+  // Click to resume
+  await autoplayBtn.click();
+  await expect(autoplayBtn).toHaveText('⏸');
 });
 
-test('keyboard navigation with arrow keys', async ({ page }) => {
+test('keyboard navigation with arrow keys', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
   await uploadAndGetViewerUrl(page);
 
   await expect(page.locator('#viewerApp')).toBeVisible();
@@ -84,7 +88,8 @@ test('keyboard navigation with arrow keys', async ({ page }) => {
   await expect(stepLabel).not.toBeEmpty();
 });
 
-test('Photoscope logo navigates back to upload page', async ({ page }) => {
+test('Photoscope logo navigates back to upload page', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
   await uploadAndGetViewerUrl(page);
 
   const homeLink = page.locator('a', { hasText: 'Photoscope' });

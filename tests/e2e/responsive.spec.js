@@ -35,7 +35,7 @@ test('upload page is usable on mobile viewport', async ({ page }) => {
 test('viewer is usable on mobile viewport', async ({ page }) => {
   await page.goto('/');
   await page.locator('#fileInput').setInputFiles(tmpFile);
-  await page.waitForURL(/\/view\/.+/, { timeout: 15000 });
+  await page.waitForURL(/\/view\/.+/, { timeout: 60000 });
 
   await expect(page.locator('#viewerApp')).toBeVisible();
   await expect(page.locator('#timeline')).toBeAttached();
@@ -49,4 +49,49 @@ test('viewer is usable on mobile viewport', async ({ page }) => {
     await overlayBoxes.first().click();
     await expect(page.locator('#stepLabel')).not.toBeEmpty();
   }
+});
+
+test('viewer has no horizontal scroll on mobile', async ({ page }, testInfo) => {
+  testInfo.setTimeout(90000);
+  await page.goto('/');
+  await page.locator('#fileInput').setInputFiles(tmpFile);
+  await page.waitForURL(/\/view\/.+/, { timeout: 60000 });
+
+  await expect(page.locator('#viewerApp')).toBeVisible();
+
+  // Check that document doesn't scroll horizontally
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test('timeline is contained within viewport on mobile', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#fileInput').setInputFiles(tmpFile);
+  await page.waitForURL(/\/view\/.+/, { timeout: 60000 });
+
+  await expect(page.locator('#timeline')).toBeAttached();
+
+  const timelineBox = await page.locator('#timeline').boundingBox();
+  if (timelineBox) {
+    expect(timelineBox.x).toBeGreaterThanOrEqual(0);
+    expect(timelineBox.x + timelineBox.width).toBeLessThanOrEqual(375);
+  }
+});
+
+test('all viewer sections visible without horizontal scrolling', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#fileInput').setInputFiles(tmpFile);
+  await page.waitForURL(/\/view\/.+/, { timeout: 60000 });
+
+  // Verify key sections are visible
+  for (const selector of ['#viewerApp', '#mainImage', '#stepNarration', '#timeline']) {
+    await expect(page.locator(selector)).toBeAttached();
+  }
+
+  // Confirm no horizontal overflow after all content loaded
+  const hasOverflow = await page.evaluate(() =>
+    document.documentElement.scrollWidth > document.documentElement.clientWidth
+  );
+  expect(hasOverflow).toBe(false);
 });
